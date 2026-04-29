@@ -3,6 +3,11 @@
     "agents": {
       "type": "http",
       "url": "https://agents.cloudflare.com/mcp"
+    },
+    "local-agents": {
+      "command": "npx",
+      "args": ["wrangler", "dev", "--port", "8787"],
+      "cwd": "packages/mcp-server"
     }
   }
 }

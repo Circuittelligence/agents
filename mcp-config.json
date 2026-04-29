@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cloudflare-agents": {
+      "command": "npx",
+      "args": ["wrangler", "dev", "--port", "8787"],
+      "cwd": "packages/mcp-server",
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}
