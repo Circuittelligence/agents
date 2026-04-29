@@ -4,8 +4,8 @@
   "description": "MCP Server exposing Cloudflare Agents primitives for AI Orchestrators",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "dev": "WRANGLER_SEND_METRICS=false wrangler dev",
+    "deploy": "WRANGLER_SEND_METRICS=false wrangler deploy"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
