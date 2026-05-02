@@ -1,44 +1,56 @@
 # Cloudflare Agents SDK Builder Skill
 
-This document serves as the operational manual for any AI agent interacting with the Cloudflare Agents SDK via its Master Control Panel (MCP). The purpose of this skill is to provide a comprehensive understanding of the underlying primitives (Nouns) and actions (Verbs) necessary to build, deploy, and interact with robust AI-driven agents on the Cloudflare infrastructure.
+This document serves as the operational manual for any AI agent interacting with the Cloudflare Agents SDK via its Master Control Panel (MCP). It defines the underlying structural and behavioral primitives necessary to build, deploy, and integrate AI-driven agents.
 
 ## 1. Core Primitives (The Nouns)
 
-Before manipulating the system, the agent must understand the foundational data structures and models exposed as **MCP Resources**. These are available by fetching resources from the MCP server:
+Before writing any agent code, you must understand the available primitives. Fetch these resources from the MCP server:
 
-- **`cf-agents://types/agent` (AgentBaseClass):**
-  The fundamental unit of the framework. Agents are Durable Objects that hold persistent state across connections. They provide native support for WebSockets, Remote Procedure Calls (RPC), and alarm-driven task scheduling. Use this resource to understand the exact properties (`state`, `env`) and lifecycle methods (`onConnect`, `onMessage`, `schedule`) you need to implement.
+- **Structural Primitives:**
+  - **`cf-agents://types/agent` (AgentBaseClass):** The raw durable class providing RPC, WebSockets, and scheduling.
+  - **`cf-agents://types/aichatagent` (AIChatAgent):** Pre-built template for standard conversational interfaces.
+  - **`cf-agents://types/think` (ThinkAgent):** Advanced agent template for LLM reasoning, sandbox execution, and tool use.
+  - **`cf-agents://types/mcpagent` (McpAgent):** Pre-built template for acting as an MCP server.
 
-- **`cf-agents://types/workflow` (AgentWorkflow):**
-  Agents often require long-running, multi-step processes that outlive a single request. Workflows define these durable sequences. They enable human-in-the-loop approvals, sleep cycles, and fault-tolerant background execution.
+- **Behavioral & Data Primitives:**
+  - **`cf-agents://types/state` (AgentState):** Native state management (`initialState`, `setState`).
+  - **`cf-agents://types/sql` (AgentSQL):** Embedded relational database capability (`this.sql`).
+  - **`cf-agents://types/queue` (TaskQueue):** FIFO background processing (`onDequeue`).
+  - **`cf-agents://types/subagent` (SubAgent):** Mechanism to spawn and coordinate multi-agent architectures (`this.subAgent()`).
+  - **`cf-agents://types/hitl` (HumanInTheLoop):** 5 defined patterns for pausing workflows for human input.
 
-- **`cf-agents://types/message` (MessageTypes):**
-  The communication schema defining the exact message structure (Incoming, Outgoing, MCP server events) necessary for client-agent or agent-agent interactions.
+- **Orchestration Primitives:**
+  - **`cf-agents://types/workflow` (AgentWorkflow):** Multi-step, durable background execution that can wait for human interaction.
+  - **`cf-agents://types/message` (MessageTypes):** Standard message structures.
+  - **`cf-agents://types/clientsdk` (ClientSDK):** Frontend hooks (`useAgent`, `useAgentChat`) for integration.
 
-**Workflow rule:** Always fetch and read the latest resource schemas before generating new code.
+**Workflow rule:** Always fetch and read the latest resource schemas to understand the context before invoking tools.
 
 ## 2. Operations (The Verbs)
 
-The MCP exposes tools to safely execute business logic and scaffold projects. Ensure strict type compliance based on the Nouns above.
+Use these tools to securely execute logic and scaffold your project:
 
 - **`scaffold_agent_class`:**
-  Generates the necessary boilerplate for a new Agent.
-  - *Parameters:* `agentName` (string), `hasState` (boolean), `hasSchedule` (boolean).
-  - *Usage:* Invoke this when you are tasked with creating a new specialized agent (e.g., `CustomerSupportAgent`, `DataProcessorAgent`).
-
+  Initializes a new Agent. Use flags (`hasState`, `hasSQL`, `hasQueue`, `hasSubAgents`) to inject complex behavioral scaffolding directly into the boilerplate.
 - **`generate_callable_method`:**
-  Generates a type-safe RPC method using the `@callable` decorator. This exposes a function on the Agent that can be securely triggered by clients or other agents.
-  - *Parameters:* `methodName` (string), `paramsSchema` (object), `returnType` (string).
-  - *Usage:* Invoke this when an agent needs to perform an explicit action or computation (e.g., `fetchUserData`, `approveTransaction`).
+  Generates a type-safe `@callable` RPC method.
+- **`generate_state_schema`:**
+  Builds the `initialState` payload and state validation logic.
+- **`generate_queue_handler`:**
+  Creates the `onDequeue` handler for background tasks.
+- **`generate_sub_agent`:**
+  Writes the logic needed to connect to and spawn child agents.
+- **`generate_sql_query`:**
+  Writes the `this.sql.execute` logic for embedded database manipulation.
+- **`generate_mcp_client`:**
+  Scaffolds the code needed for an agent to connect to an external MCP server (`this.mcp.connect`).
 
 ## 3. Interaction & Deployment Strategy
 
-When utilizing this skill, follow this strict deterministic workflow:
+1. **Discovery:** Read the relevant resources (`ListResources`, `ReadResource`) to understand which primitive fits your use case (e.g., Should I use an `AIChatAgent` or a raw `Agent`?).
+2. **Scaffolding:** Call `scaffold_agent_class` with the necessary structural flags (e.g., `hasSQL=true`).
+3. **Enhancement:** Iteratively add behavior using specialized tools (`generate_state_schema`, `generate_queue_handler`).
+4. **Verification:** Validate the TypeScript types.
+5. **Deployment:** Deploy the code via Cloudflare Workers (`wrangler`).
 
-1. **Discovery:** Read the relevant resources (`ListResources`, `ReadResource`) to ensure you are operating with the correct types and context.
-2. **Scaffolding:** Call the `scaffold_agent_class` tool to initialize your class structure.
-3. **Enhancement:** Iteratively add functionality using `generate_callable_method` for RPC, or implement Workflows based on the workflow resource definitions.
-4. **Verification:** Ensure your types align and the code compiles without missing imports.
-5. **Deployment:** The generated code is designed to be bundled and deployed via Cloudflare Workers (`wrangler`).
-
-By following this skill guide, you transform the Cloudflare Agents codebase into a live intelligence layer, abstracting friction and ensuring safe, predictable code generation.
+By following this skill guide, you transform the Cloudflare Agents codebase into a live intelligence layer, capturing both structural definitions and complex behavioral state.

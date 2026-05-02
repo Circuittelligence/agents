@@ -1,13 +1,12 @@
 {
   "mcpServers": {
     "agents": {
-      "type": "http",
+      "type": "sse",
       "url": "https://agents.cloudflare.com/mcp"
     },
     "local-agents": {
-      "command": "npx",
-      "args": ["wrangler", "dev", "--port", "8787"],
-      "cwd": "packages/mcp-server"
+      "type": "sse",
+      "url": "http://127.0.0.1:8787/mcp"
     }
   }
 }
