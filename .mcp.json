@@ -1,8 +1,12 @@
 {
   "mcpServers": {
     "agents": {
-      "type": "http",
+      "type": "sse",
       "url": "https://agents.cloudflare.com/mcp"
+    },
+    "local-agents": {
+      "type": "sse",
+      "url": "http://127.0.0.1:8787/mcp"
     }
   }
 }
